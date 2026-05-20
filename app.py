@@ -1,3 +1,3 @@
 import streamlit as st
-st.title('오채린 제일 이쁨')
-st.write('바이부코딩 재미있다!!')
+st.title('박서하 나라 구해')
+st.write('박서하 1호 팬!!')
