@@ -1,10 +1,20 @@
 import streamlit as st
-from openai import OpenAI
+import subprocess
+import sys
+
+# [강제 패키지 설치 코드] 
+# Streamlit Cloud가 requirements.txt를 못 읽는 에러를 원천 차단합니다.
+try:
+    from openai import OpenAI
+except ModuleNotFoundError:
+    with st.spinner("🚀 초기 시스템 라이브러리(OpenAI)를 설치 중입니다. 잠시만 기다려 주세요..."):
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "openai"])
+    from openai import OpenAI
 
 # 페이지 설정
 st.set_page_config(page_title="연애 코칭: 성격 맞춤 대화 가이드", page_icon="❤️", layout="centered")
 
-# 사이드바에서 API 키 입력 받기 (배포 시에는 Streamlit Secrets 활용 가능)
+# 사이드바에서 API 키 입력 받기
 st.sidebar.title("🛠️ 설정")
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 st.sidebar.markdown("""
@@ -19,7 +29,7 @@ st.markdown("""
 **AI 코치**가 두 사람이 상처받지 않고 대화할 수 있는 **구체적인 방향과 추천 멘트**를 알려드립니다.
 """)
 
-# 1. 주제 선택 (세 가지 주요 성격 갈등 주제)
+# 1. 주제 선택
 st.subheader("1. 어떤 성격 차이로 고민 중이신가요?")
 topic = st.selectbox(
     "갈등 주제를 선택하세요",
@@ -73,7 +83,7 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
                    - 함께 타협점을 찾기 위한 '제안의 한마디'
                 """
 
-                # API 호출
+                # API 호출 (최신 4o-mini 모델 활용)
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
