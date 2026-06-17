@@ -83,7 +83,7 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
                    - 함께 타협점을 찾기 위한 '제안의 한마디'
                 """
 
-                # API 호출 (최신 4o-mini 모델 활용)
+                # API 호출 (최신 gpt-4o-mini 모델 활용)
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
@@ -102,4 +102,4 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
             except Exception as e:
                 st.error(f"오류가 발생했습니다: {e}")
 
-st.caption("💡 대화는 이기고 지는 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
+st.caption("💡 대화는 이기로 지는 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
