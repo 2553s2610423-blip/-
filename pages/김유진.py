@@ -1,15 +1,5 @@
-import streamlit as st
-import subprocess
-import sys
-
-# [강제 패키지 설치 코드] 
-# Streamlit Cloud가 requirements.txt를 못 읽는 에러를 원천 차단합니다.
-try:
-    from openai import OpenAI
-except ModuleNotFoundError:
-    with st.spinner("🚀 초기 시스템 라이브러리(OpenAI)를 설치 중입니다. 잠시만 기다려 주세요..."):
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "openai"])
-    from openai import OpenAI
+ import streamlit as st
+from openai import OpenAI
 
 # 페이지 설정
 st.set_page_config(page_title="연애 코칭: 성격 맞춤 대화 가이드", page_icon="❤️", layout="centered")
@@ -102,4 +92,4 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
             except Exception as e:
                 st.error(f"오류가 발생했습니다: {e}")
 
-st.caption("💡 대화는 이기로 지는 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
+st.caption("💡 대화는 이기기 위한 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
