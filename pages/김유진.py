@@ -1,126 +1,97 @@
+import streamlit as sns
 import streamlit as st
-import openai
+from openai import OpenAI
 
-# -------------------------
-# 설정
-# -------------------------
-st.set_page_config(page_title="연애 성격 코칭 AI", page_icon="💗")
+# 페이지 설정
+st.set_page_config(page_title="연애 코칭: 성격 맞춤 대화 가이드", page_icon="❤️", layout="centered")
 
-st.title("💗 연애 성격 코칭 AI")
-st.write("서로 다른 성격을 어떻게 맞춰갈지 + 대화 방법 + AI 추천 문장을 제공합니다.")
+# 사이드바에서 API 키 입력 받기 (배포 시에는 Streamlit Secrets 활용 가능)
+st.sidebar.title("🛠️ 설정")
+openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
+st.sidebar.markdown("""
+[API 키 발급받기](https://platform.openai.com/api-keys)
+""")
 
-# -------------------------
-# API 키 입력
-# -------------------------
-api_key = st.sidebar.text_input("OpenAI API Key 입력", type="password")
+# 앱 제목 및 소개
+st.title("❤️ 연애 코칭: 다른 성격 극복하기")
+st.markdown("""
+서로 성격이 너무 달라서 부딪히시나요? 
+서로의 성격 유형을 선택하고, 최근 있었던 상황이나 고민을 적어주세요. 
+**AI 코치**가 두 사람이 상처받지 않고 대화할 수 있는 **구체적인 방향과 추천 멘트**를 알려드립니다.
+""")
 
-if api_key:
-    openai.api_key = api_key
-else:
-    st.warning("왼쪽 사이드바에 OpenAI API Key를 입력하세요.")
-    st.stop()
+# 1. 주제 선택 (요청하신 세 가지 주요 성격 갈등 주제)
+st.subheader("1. 어떤 성격 차이로 고민 중이신가요?")
+topic = st.selectbox(
+    "갈등 주제를 선택하세요",
+    [
+        "외향형(E) vs 내향형(I) - 데이트 성향 및 에너지 충전 방식의 차이",
+        "감성형(F) vs 이성형(T) - 공감과 해결책 중심의 대화 방식 차이",
+        "계획형(J) vs 즉흥형(P) - 데이트 계획 및 라이프스타일의 차이"
+    ]
+)
 
-# -------------------------
-# 성격 입력
-# -------------------------
-st.header("1️⃣ 두 사람의 성격 입력")
-
+# 2. 본인과 상대방의 성격 및 상황 입력
+st.subheader("2. 두 사람의 상태를 알려주세요")
 col1, col2 = st.columns(2)
 
 with col1:
-    person_a = st.text_area("A의 성격", placeholder="예: 감정 표현이 적고 혼자 있는 걸 좋아함")
+    my_status = st.text_input("나의 입장/성향 (예: 서운한 점, 내 생각)", placeholder="예: 주말엔 같이 밖에서 데이트하며 에너지를 얻고 싶어요.")
 
 with col2:
-    person_b = st.text_area("B의 성격", placeholder="예: 감정 표현이 많고 대화를 중요시함")
+    partner_status = st.text_input("상대방의 입장/성향 (예: 상대방이 한 말)", placeholder="예: 주중 일 때문에 지쳐서 주말엔 집에서 쉬고 싶어 해요.")
 
-relationship_stage = st.selectbox(
-    "관계 단계",
-    ["썸", "연애 초기", "장기 연애", "갈등 중"]
-)
+context = st.text_area("최근에 있었던 구체적인 갈등 상황 (선택사항)", placeholder="예: 이번 주말 데이트 계획을 짜다가 상대방이 집에서 쉬고 싶다고 해서 말다툼이 있었어요.")
 
-goal = st.text_input("원하는 목표",
-                     placeholder="예: 싸움을 줄이고 대화를 잘하고 싶다")
-
-# -------------------------
-# AI 프롬프트 생성
-# -------------------------
-def generate_advice(a, b, stage, goal):
-    prompt = f"""
-너는 전문 연애 코치이자 커뮤니케이션 전문가다.
-
-다음 정보를 기반으로 현실적이고 실행 가능한 조언을 제공하라:
-
-A 성격: {a}
-B 성격: {b}
-관계 단계: {stage}
-목표: {goal}
-
-출력 형식:
-
-1. 성격 차이 핵심 분석 (간단하게)
-2. 자주 발생할 수 있는 갈등 상황
-3. 서로 맞추는 핵심 전략 3가지
-4. 실제로 사용할 수 있는 대화 예시 (A가 B에게 / B가 A에게)
-5. 싸움이 나기 전 예방 방법
-6. 관계 개선을 위한 한 줄 핵심 조언
-"""
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "너는 따뜻하지만 현실적인 연애 코치다."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.7
-    )
-
-    return response.choices[0].message.content
-
-# -------------------------
-# 실행 버튼
-# -------------------------
-st.header("2️⃣ 분석 결과")
-
-if st.button("💡 AI 코칭 받기"):
-    if not person_a or not person_b:
-        st.error("두 사람의 성격을 모두 입력해주세요.")
+# 코칭 받기 버튼
+if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
+    if not openai_api_key:
+        st.warning("왼쪽 사이드바에 OpenAI API Key를 입력해주세요.")
+    elif not my_status or not partner_status:
+        st.warning("나와 상대방의 입장/성향을 입력해주세요.")
     else:
-        with st.spinner("AI가 관계를 분석 중입니다..."):
-            result = generate_advice(person_a, person_b, relationship_stage, goal)
-            st.markdown(result)
+        with st.spinner("AI 코치가 두 사람의 마음을 분석하여 대화법을 작성 중입니다..."):
+            try:
+                # OpenAI 클라이언트 초기화
+                client = OpenAI(api_key=openai_api_key)
+                
+                # 프롬프트 구성
+                prompt = f"""
+                당신은 관계 심리학 전문가이자 다정한 연애 코치입니다. 
+                서로 다른 성격을 가진 커플이 서로 상처 주지 않고 건설적인 대화를 나눌 수 있도록 도와주세요.
 
-# -------------------------
-# 대화 연습 기능
-# -------------------------
-st.header("3️⃣ 대화 코칭 (실전 말투 추천)")
+                [갈등 주제]: {topic}
+                [사용자 입장]: {my_status}
+                [상대방 입장]: {partner_status}
+                [구체적 상황]: {context if context else '없음'}
 
-topic = st.text_input("대화 상황 입력", placeholder="예: 연락이 너무 늦어서 서운할 때")
+                위 내용을 바탕으로 다음 세 가지 요소를 포함하여 친절하고 따뜻한 말투로 코칭을 제공해 주세요:
+                1. 💡 **성격 차이 이해하기**: 두 사람의 성향 차이에서 오는 오해의 원인을 부드럽게 짚어주세요.
+                2. 🧭 **대화의 방향성**: 대화를 시작할 때 어떤 태도와 마음가짐을 가져야 하는지 알려주세요.
+                3. 💬 **추천 대화 멘트 (말투)**: 
+                   - 상대방의 마음을 열 수 있는 '첫 마디'
+                   - 나의 서운함을 상처 주지 않고 전달하는 '나-전달법(I-Message) 멘트'
+                   - 함께 타협점을 찾기 위한 '제안의 한마디'
+                """
 
-if st.button("💬 대화 추천 받기"):
-    if not topic:
-        st.warning("상황을 입력해주세요.")
-    else:
-        chat_prompt = f"""
-너는 연애 커뮤니케이션 코치다.
+                # API 호출
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",  # 가성비 좋고 빠른 모델 사용
+                    messages=[
+                        {"role": "system", "content": "너는 커플들의 소통을 돕는 다정하고 전문적인 연애 코치야."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7
+                )
+                
+                # 결과 출력
+                st.success("코칭 가이드가 준비되었습니다! 아래 내용을 참고해 대화를 시도해보세요.")
+                st.markdown("---")
+                st.markdown(response.choices[0].message.content)
+                st.markdown("---")
+                
+            except Exception as e:
+                st.error(class_name=f"오류가 발생했습니다: {e}")
 
-상황: {topic}
-A 성격: {person_a}
-B 성격: {person_b}
-
-다음 형식으로 답하라:
-- 감정 상하지 않게 말하는 방법
-- A가 말해야 할 문장 2개
-- B가 말해야 할 문장 2개
-- 상황이 악화되지 않게 하는 핵심 팁
-"""
-
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "너는 갈등을 줄이는 커뮤니케이션 전문가다."},
-                {"role": "user", "content": chat_prompt}
-            ],
-            temperature=0.7
-        )
-
-        st.markdown(response.choices[0].message.content)
+# 하단 푸터
+st.caption("💡 대화는 이기고 지는 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
