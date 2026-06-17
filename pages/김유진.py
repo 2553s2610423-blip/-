@@ -1,4 +1,3 @@
-import streamlit as sns
 import streamlit as st
 from openai import OpenAI
 
@@ -20,7 +19,7 @@ st.markdown("""
 **AI 코치**가 두 사람이 상처받지 않고 대화할 수 있는 **구체적인 방향과 추천 멘트**를 알려드립니다.
 """)
 
-# 1. 주제 선택 (요청하신 세 가지 주요 성격 갈등 주제)
+# 1. 주제 선택 (세 가지 주요 성격 갈등 주제)
 st.subheader("1. 어떤 성격 차이로 고민 중이신가요?")
 topic = st.selectbox(
     "갈등 주제를 선택하세요",
@@ -76,7 +75,7 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
 
                 # API 호출
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",  # 가성비 좋고 빠른 모델 사용
+                    model="gpt-4o-mini",
                     messages=[
                         {"role": "system", "content": "너는 커플들의 소통을 돕는 다정하고 전문적인 연애 코치야."},
                         {"role": "user", "content": prompt}
@@ -91,7 +90,6 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
                 st.markdown("---")
                 
             except Exception as e:
-                st.error(class_name=f"오류가 발생했습니다: {e}")
+                st.error(f"오류가 발생했습니다: {e}")
 
-# 하단 푸터
 st.caption("💡 대화는 이기고 지는 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
