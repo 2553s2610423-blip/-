@@ -67,4 +67,30 @@ if st.button("💌 AI 연애 코칭 대화 가이드 받기"):
                 위 내용을 바탕으로 다음 세 가지 요소를 포함하여 친절하고 따뜻한 말투로 코칭을 제공해 주세요:
                 1. 💡 **성격 차이 이해하기**: 두 사람의 성향 차이에서 오는 오해의 원인을 부드럽게 짚어주세요.
                 2. 🧭 **대화의 방향성**: 대화를 시작할 때 어떤 태도와 마음가짐을 가져야 하는지 알려주세요.
+                3. 💬 **추천 대화 멘트 (말투)**: 
+                   - 상대방의 마음을 열 수 있는 '첫 마디'
+                   - 나의 서운함을 상처 주지 않고 전달하는 '나-전달법(I-Message) 멘트'
+                   - 함께 타협점을 찾기 위한 '제안의 한마디'
+                """
+
+                # API 호출 (최신 gpt-4o-mini 모델 활용)
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "너는 커플들의 소통을 돕는 다정하고 전문적인 연애 코치야."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7
+                )
+                
+                # 결과 출력
+                st.success("코칭 가이드가 준비되었습니다! 아래 내용을 참고해 대화를 시도해보세요.")
+                st.markdown("---")
+                st.markdown(response.choices[0].message.content)
+                st.markdown("---")
+                
+            except Exception as e:
+                st.error(f"오류가 발생했습니다: {e}")
+
+st.caption("💡 대화는 이기기 위한 게임이 아니라, 서로를 이해해가는 과정입니다. 화이팅! 💕")
                 3.
