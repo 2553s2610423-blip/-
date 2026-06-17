@@ -1,6 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
-import time  # 💡 [해결] Quota 429 에러 발생 시 대기 처리를 위한 라이브러리
+import time  # 💡 Quota 429 에러 발생 시 대기 처리를 위한 라이브러리
 
 # 1. 페이지 기본 설정 및 디자인
 st.set_page_config(
@@ -9,14 +9,30 @@ st.set_page_config(
     layout="centered"
 )
 
-# 🎨 [수정] 메인 타이틀과 포인트 컬러를 러블리한 분홍색(#FF69B4) 계열로 변경
+# 🎨 [수정] 선택된 키워드 글씨 배경을 흰색(#FFFFFF)으로 변경하는 스타일 추가
 st.markdown("""
     <style>
     .main-title { font-size: 2.5rem; font-weight: bold; color: #FF69B4; text-align: center; margin-bottom: 5px; }
     .sub-title { font-size: 1.1rem; color: #666666; text-align: center; margin-bottom: 30px; }
     .section-header { font-size: 1.4rem; font-weight: bold; color: #444444; margin-top: 20px; }
     
-    /* 기본 스트림릿 버튼 색상도 분홍색 계열로 매칭 */
+    /* 🎯 선택된 키워드(태그) 배경을 흰색으로 바꾸고 예쁜 분홍색 테두리 추가 */
+    span[data-baseweb="tag"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #FFB6C1 !important;
+        color: #444444 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* 태그 내부의 글자 색상과 x 버튼 색상 조정 */
+    span[data-baseweb="tag"] span {
+        color: #444444 !important;
+    }
+    span[data-baseweb="tag"] role[button] {
+        color: #FF69B4 !important;
+    }
+    
+    /* 기본 스트림릿 버튼 디자인 */
     div.stButton > button {
         background-color: #FFB6C1 !important;
         color: white !important;
@@ -95,7 +111,7 @@ if st.button("💖 맞춤형 연애 가이드 받기", use_container_width=True)
             친근하고 가독성 좋게 이모지를 섞어서 마크다운(Markdown) 형식으로 출력해 주세요.
             """
             
-            # 💡 [해결] Quota 429 에러 감지 및 자동 재시도 루프
+            # Quota 429 에러 감지 및 자동 재시도 루프
             for attempt in range(max_retries):
                 try:
                     # Gemini API 초기화 및 호출
