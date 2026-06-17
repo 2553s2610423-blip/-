@@ -16,18 +16,18 @@ if "quiz_submitted" not in st.session_state:
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
-    # 모델은 요구사항에 따라 gemini-2.5-flash-lite 지정
+    # 모델 지정: gemini-2.5-flash-lite
     model = genai.GenerativeModel('gemini-2.5-flash-lite')
 except Exception as e:
     st.error("⚠️ API 키 설정을 확인해주세요. Streamlit Secrets에 'GEMINI_API_KEY'가 필요합니다.")
     st.stop()
 
-# 2. 앱 타이틀 & 소개
+# 2. 앱 타이틀 & 소개 (오류 수정 완료)
 st.title("💌 연애의 온도")
-st.subtitle("오래가는 연락, 센스 있는 대화를 위한 AI 맞춤형 대화 코칭룸")
+st.subheader("오래가는 연락, 센스 있는 대화를 위한 AI 맞춤형 대화 코칭룸")
 st.markdown("---")
 
-# 3. 사이드바 - 미니 연애 센스 퀴즈 (차별화 요소)
+# 3. 사이드바 - 미니 연애 센스 퀴즈
 with st.sidebar:
     st.header("🧠 재미로 보는 연애 센스 퀴즈")
     st.write("**Q. 상대방이 '오늘 회사에서 너무 힘들었어...'라고 했을 때, 가장 좋은 답장은?**")
@@ -97,31 +97,4 @@ with tab1:
                 
                 try:
                     response = model.generate_content(prompt)
-                    st.success("🍀 AI 코치의 솔루션이 도착했습니다!")
-                    st.markdown("---")
-                    st.markdown(response.text)
-                    st.markdown("---")
-                except Exception as e:
-                    st.error(f"오류가 발생했습니다. 다시 시도해주세요. (에러 내용: {e})")
-
-with tab2:
-    st.header("📚 대화의 정석: 필수 꿀팁 리스트")
-    st.write("누구와 대화하든 호감을 사고 연락을 오래 유지하는 핵심 원칙입니다.")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("⏳ 연락을 오래 이어가는 법")
-        st.markdown("""
-        * **단답형 질문 피하기**: "오늘 뭐 했어요?" 보다는 "오늘 날씨 되게 좋았는데 맛있는 거 드셨어요?" 처럼 답변의 폭을 넓혀주세요.
-        * **'나도' 법칙 활용**: 상대방이 취미를 말했을 때, 격하게 공감하며 나의 관련 경험을 살짝 얹으면 대화가 끊이지 않습니다.
-        * **마무리는 열린 질문으로**: 대화 문장 끝에 가볍게 질문을 던져 상대방이 답장할 명분을 만들어주세요.
-        """)
-        
-    with col2:
-        st.subheader("📈 대화를 좋은 쪽으로 리드하는 법")
-        st.markdown("""
-        * **감정 리액션 먼저**: "나 오늘 지각했어" 라는 말에 "왜 지각함?" 대신 "헐 고생했겠네, 아침부터 가슴 철렁했겠다"가 먼저입니다.
-        * **상대방의 키워드 포착**: 상대가 흘리듯 말한 관심사(영화, 반려견, 맛집)를 기억해 두었다가 다음 대화의 주제로 삼으세요.
-        * **긍정적 에너지 전달**: 불평불만보다는 소소하더라도 기분 좋은 일상 공유가 대화방의 온도를 높입니다.
-        """)
+                    st.success
