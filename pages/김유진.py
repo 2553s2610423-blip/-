@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+import time  # 💡 [해결] Quota 429 에러 발생 시 대기 처리를 위한 라이브러리
 
 # 1. 페이지 기본 설정 및 디자인
 st.set_page_config(
@@ -8,12 +9,25 @@ st.set_page_config(
     layout="centered"
 )
 
-# 커스텀 스타일 적용 (감성적인 연애 코칭 앱 분위기)
+# 🎨 [수정] 메인 타이틀과 포인트 컬러를 러블리한 분홍색(#FF69B4) 계열로 변경
 st.markdown("""
     <style>
-    .main-title { font-size: 2.5rem; font-weight: bold; color: #FF4B4B; text-align: center; margin-bottom: 5px; }
+    .main-title { font-size: 2.5rem; font-weight: bold; color: #FF69B4; text-align: center; margin-bottom: 5px; }
     .sub-title { font-size: 1.1rem; color: #666666; text-align: center; margin-bottom: 30px; }
-    .section-header { font-size: 1.4rem; font-weight: bold; color: #333333; margin-top: 20px; }
+    .section-header { font-size: 1.4rem; font-weight: bold; color: #444444; margin-top: 20px; }
+    
+    /* 기본 스트림릿 버튼 색상도 분홍색 계열로 매칭 */
+    div.stButton > button {
+        background-color: #FFB6C1 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    div.stButton > button:hover {
+        background-color: #FF69B4 !important;
+        color: white !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -62,36 +76,50 @@ if st.button("💖 맞춤형 연애 가이드 받기", use_container_width=True)
         st.warning("⚠️ 나와 상대방의 성격 키워드를 최소 1개 이상 선택해 주세요!")
     else:
         with st.spinner("AI 연애 코치가 두 사람의 성격을 분석 중입니다... 💌"):
-            try:
-                # Gemini API 초기화
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-2.5-flash-lite')
-                
-                # 프롬프트 작성
-                prompt = f"""
-                당신은 전문 연애 코칭 전문가입니다. 아래 두 사람의 성격 키워드를 바탕으로, 서로 다른 성격을 극복하고 예쁜 사랑을 이어갈 수 있는 구체적인 맞춤형 조언을 작성해 주세요.
-                
-                [나의 성격 키워드]: {', '.join(my_keywords)}
-                [상대방의 성격 키워드]: {', '.join(partner_keywords)}
-                [코칭 스타일]: {coach_tone}
-                
-                다음 형식에 맞춰 가독성 좋게 작성해 주세요:
-                1. 🌟 **두 사람의 성격 케미 요약**: 두 사람의 성격 조합이 가지는 특징을 한 줄로 요약해줘.
-                2. ⚡ **부딪힐 수 있는 갈등 포인트**: 선택된 키워드들을 비교했을 때, 어떤 상황에서 주로 서운함이나 오해가 생길 수 있는지 분석해줘.
-                3. 💡 **서로를 위한 맞춤형 행동 지침**: 내가 상대방에게 해야 할 행동/말, 그리고 상대방이 나에게 해주면 좋은 행동/말을 구체적이고 실천 가능한 팁으로 제안해줘.
-                
-                친근하고 가독성 좋게 이모지를 섞어서 마크다운(Markdown) 형식으로 출력해 주세요.
-                """
-                
-                # 콘텐츠 생성
-                response = model.generate_content(prompt)
-                
-                # 결과 출력
-                st.success("✨ 분석이 완료되었습니다!")
-                st.markdown("---")
-                st.markdown(response.text)
-                st.markdown("---")
-                st.caption("💡 성격은 서로 다른 매력이 될 수 있습니다. 서로 조금씩만 배려해 보세요!")
-                
-            except Exception as e:
-                st.error(f"❌ 오류가 발생했습니다: {e}\nAPI 키가 올바른지 혹은 네트워크 상태를 확인해 주세요.")
+            max_retries = 3      # 최대 재시도 횟수
+            retry_delay = 5      # 재시도 전 대기 시간 (초)
+            
+            # 프롬프트 작성
+            prompt = f"""
+            당신은 전문 연애 코칭 전문가입니다. 아래 두 사람의 성격 키워드를 바탕으로, 서로 다른 성격을 극복하고 예쁜 사랑을 이어갈 수 있는 구체적인 맞춤형 조언을 작성해 주세요.
+            
+            [나의 성격 키워드]: {', '.join(my_keywords)}
+            [상대방의 성격 키워드]: {', '.join(partner_keywords)}
+            [코칭 스타일]: {coach_tone}
+            
+            다음 형식에 맞춰 가독성 좋게 작성해 주세요:
+            1. 🌟 **두 사람의 성격 케미 요약**: 두 사람의 성격 조합이 가지는 특징을 한 줄로 요약해줘.
+            2. ⚡ **부딪힐 수 있는 갈등 포인트**: 선택된 키워드들을 비교했을 때, 어떤 상황에서 주로 서운함이나 오해가 생길 수 있는지 분석해줘.
+            3. 💡 **서로를 위한 맞춤형 행동 지침**: 내가 상대방에게 해야 할 행동/말, 그리고 상대방이 나에게 해주면 좋은 행동/말을 구체적이고 실천 가능한 팁으로 제안해줘.
+            
+            친근하고 가독성 좋게 이모지를 섞어서 마크다운(Markdown) 형식으로 출력해 주세요.
+            """
+            
+            # 💡 [해결] Quota 429 에러 감지 및 자동 재시도 루프
+            for attempt in range(max_retries):
+                try:
+                    # Gemini API 초기화 및 호출
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel('gemini-2.5-flash-lite')
+                    response = model.generate_content(prompt)
+                    
+                    # 성공 시 결과 출력 후 안전하게 루프 종료
+                    st.success("✨ 분석이 완료되었습니다!")
+                    st.markdown("---")
+                    st.markdown(response.text)
+                    st.markdown("---")
+                    st.caption("💡 성격은 서로 다른 매력이 될 수 있습니다. 서로 조금씩만 배려해 보세요!")
+                    break
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    # 429 에러가 확인되면 잠시 대기 후 재시도
+                    if "429" in error_msg or "Quota exceeded" in error_msg:
+                        if attempt < max_retries - 1:
+                            st.warning(f"⚠️ 현재 이용자가 많아 순차적으로 처리 중입니다. {retry_delay}초 후 자동으로 다시 시도합니다. (시도 {attempt + 1}/{max_retries})")
+                            time.sleep(retry_delay)
+                            continue 
+                    
+                    # 그 외 치명적인 에러 처리
+                    st.error(f"❌ 오류가 발생했습니다: {e}\nAPI 키가 올바른지 혹은 잠시 후 다시 실행해 주세요.")
+                    break
