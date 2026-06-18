@@ -1,4 +1,10 @@
-import streamlit as st
+# ❌ 파이썬이 문법 오류를 일으키는 형태 (주석 끝에 elif가 붙음)
+st.success("👑 호감도 100%입니다!")# --- 메뉴 끝 ---elif menu == "📅 데일리 자기관리 체크리스트":
+
+# ⭕ 정상적인 형태 (반드시 줄바꿈이 되어야 함)
+st.success("👑 호감도 100%입니다!")
+# --- 메뉴 끝 ---
+elif menu == "📅 데일리 자기관리 체크리스트":import streamlit as st
 import random
 
 # 1. 페이지 기본 설정 및 테마 감성 부여
